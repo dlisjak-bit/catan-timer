@@ -27,8 +27,8 @@ export default function GameScreen() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen p-4">
-      <h1 className="text-2xl font-bold">Catan Timer</h1>
-      <div className="text-6xl font-bold">
+      <h3 className="text-2xl font-bold">Catan Timer</h3>
+      <div className="text-6xl font-bold timer">
         {activePlayer ? `${timeLeft}s` : "Select a Player"}
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -54,7 +54,7 @@ export default function GameScreen() {
         className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
         onClick={() => navigate("/")}
       >
-        Restart
+        Restart Game
       </button>
     </div>
   );
