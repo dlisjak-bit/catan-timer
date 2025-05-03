@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function GameScreen() {
@@ -7,54 +7,102 @@ export default function GameScreen() {
 
   if (!state) return navigate("/");
 
-  const { timePerMove, players } = state;
-  const [activePlayer, setActivePlayer] = useState(null);
+  const { timePerMove = 60 } = state;
   const [timeLeft, setTimeLeft] = useState(timePerMove);
   const [paused, setPaused] = useState(false);
+  const ringSound = new Audio("/catan-timer/ring.mp3");
 
   useEffect(() => {
-    if (!activePlayer || paused) return;
-    const interval = setInterval(() => {
-      setTimeLeft((t) => (t > 0 ? t - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activePlayer, paused]);
+    if (paused) return;
 
-  const handlePlayerClick = (player) => {
-    setActivePlayer(player);
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev > 1) return prev - 1;
+        if (prev === 1) {
+          let playCount = 0;
+          const playSound = () => {
+            if (playCount < 3) {
+              ringSound.play();
+              playCount++;
+              setTimeout(playSound, 1000);
+            }
+          };
+          playSound();
+        }
+        return 0;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [paused]);
+
+  const nextPlayer = () => {
+    setPaused(true);
     setTimeLeft(timePerMove);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen p-4">
-      <h3 className="text-2xl font-bold">Catan Timer</h3>
-      <div className="text-6xl font-bold timer">
-        {activePlayer ? `${timeLeft}s` : "Select a Player"}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        padding: "1rem",
+      }}
+    >
+      <h3 style={{ fontSize: "2rem", fontWeight: "bold" }}>Catan Timer</h3>
+      <div style={{ fontSize: "5rem", fontWeight: "bold", margin: "1rem 0" }}>
+        {timeLeft}s
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        {players.map((player, i) => (
-          <button
-            key={i}
-            className={`px-6 py-3 rounded text-white font-semibold ${
-              activePlayer === player ? "bg-green-500" : "bg-blue-500"
-            }`}
-            onClick={() => handlePlayerClick(player)}
-          >
-            {player}
-          </button>
-        ))}
-      </div>
+
       <button
-        className="mt-6 bg-yellow-500 text-white px-4 py-2 rounded"
-        onClick={() => setPaused((p) => !p)}
+        style={{
+          fontSize: "2rem",
+          padding: "1rem 2rem",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          margin: "1rem",
+          cursor: "pointer",
+        }}
+        onClick={nextPlayer}
       >
-        {paused ? "Resume" : "Pause"}
+        Naslednji igralec
       </button>
+
       <button
-        className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
+        style={{
+          fontSize: "2rem",
+          padding: "1rem 2rem",
+          backgroundColor: "#ffc107",
+          color: "black",
+          border: "none",
+          borderRadius: "8px",
+          margin: "1rem",
+          cursor: "pointer",
+        }}
+        onClick={() => setPaused(false)}
+      >
+        Konec deljenja
+      </button>
+
+      <button
+        style={{
+          fontSize: "1.5rem",
+          padding: "0.75rem 1.5rem",
+          backgroundColor: "#dc3545",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          marginTop: "2rem",
+          cursor: "pointer",
+        }}
         onClick={() => navigate("/")}
       >
-        Restart Game
+        Začni znova
       </button>
     </div>
   );
